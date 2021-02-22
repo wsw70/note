@@ -361,6 +361,9 @@ def quick_or_new_note(quick: bool, content: list) -> None:
 
 
 if __name__ == "__main__":
+    class UnknownOS(Exception):
+        pass
+
     # setup logging
     log = Logging.get_logger("note")
     log.debug(f"logging level: {os.environ.get('NOTE_LOGLEVEL', logging.INFO)} (default is {logging.INFO})")
@@ -374,8 +377,8 @@ if __name__ == "__main__":
             home = os.environ['HOME']
             editor_binary = os.environ.get('NOTE_EDITOR', 'vi')
         else:
-            raise NotImplemented
-    except NotImplemented:
+            raise UnknownOS
+    except UnknownOS:
         log.critical(f"unknown platform {sys.platform}. Please open a new Feature request at https://github.com/wsw70/note/issues/new/choose")
         sys.exit()
     except KeyError:
