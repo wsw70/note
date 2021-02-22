@@ -119,26 +119,26 @@ at https://github.com/wsw70/note/issues/new/choose
 
 ### short term
 
-[ ] consider adding a configuration file instead of environment variables
-[ ] add colors to teh table of notes, to differentiate quick ones, volatile notes (see below), etc. Maybe allow for "
+- [ ] consider adding a configuration file instead of environment variables
+- [ ] add colors to teh table of notes, to differentiate quick ones, volatile notes (see below), etc. Maybe allow for "
 important tags" with a special color, or define a color by tag?
-[ ] configure the sorting of lists (by title, serial or last modified)
-[ ] add other typical ways to abort (Escape, Ctrl-C, ...)
-[ ] check for identical titles (not sure yet if this is a good idea)
-[ ] better control on unexpected situations via clever exception catching
-[ ] searching in the content of the notes
-[ ] short lived notes (a `#1d` tag would automatically remove the note after one day) -> requires some kind of garbage
+- [ ] configure the sorting of lists (by title, serial or last modified)
+- [ ] add other typical ways to abort (Escape, Ctrl-C, ...)
+- [ ] check for identical titles (not sure yet if this is a good idea)
+- [ ] better control on unexpected situations via clever exception catching
+- [ ] searching in the content of the notes
+- [ ] short lived notes (a `#1d` tag would automatically remove the note after one day) -> requires some kind of garbage
 collector (maybe as a collateral of some functions?)
-[ ] maybe turn the functions into @staticmethod to visually better organize the code
-[ ] actually delete old deleted notes (which are for now renamed to .bak)
-[ ] process command line via doctopts or similar
+- [ ] maybe turn the functions into @staticmethod to visually better organize the code
+- [ ] actually delete old deleted notes (which are for now renamed to .bak)
+- [ ] process command line via doctopts or similar
 
 ### longer term
 
-[ ] simple and fast web app (ideally pure HTML and CSS)
-[ ] API (not sure what for yet, but I like APIs)
-[ ] Think about race conditions with the API or web app
-[ ] Optional encryption
+- [ ] simple and fast web app (ideally pure HTML and CSS)
+- [ ] API (not sure what for yet, but I like APIs)
+- [ ] Think about race conditions with the API or web app
+- [ ] Optional encryption
 
 # FAQ
 
