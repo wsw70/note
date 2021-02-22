@@ -35,7 +35,7 @@ After several cryptic lines you will find your executable in a newly created dir
 ### The alias way
 
 I actually never used aliases in Windows, but apparently there is `doskey` for `cmd` and `Set-Alias` for PowerShell. I
-will someday update this README with remevant information but if someone could make a PR I would appreciate.
+will someday update this README with relevant information but if someone could make a PR I would appreciate.
 
 ## Linux
 
@@ -46,7 +46,7 @@ Instructions for other shells will come here someday.
 # Usage
 
 **Important note** At that stage, `note` is for well-behaved users that will not try to push it to its limits.
-Everything works per the documentation, but you may find soem corner cases that were not caught yet. Please open an
+Everything works per the documentation, but you may find some corner cases that were not caught yet. Please open an
 Issue so that I can rush to fix it.
 
 ## Environment variables
@@ -59,7 +59,7 @@ Issue so that I can rush to fix it.
 
 ## Managing notes
 
-Notes have the followog attributes:
+Notes have the following attributes:
 
 - a content (in files, you do not need to worry about that)
 - a serial number, which you access via `$<serial number>`
@@ -70,7 +70,7 @@ Notes have the followog attributes:
 
 ### Quick notes (`q`)
 
-This allows to create a full note from the command line without going theough an editor. Typically, the equivalent of
+This allows to create a full note from the command line without going through an editor. Typically, the equivalent of
 that scrap of paper you note a phone number on.
 
      note q some content /oh a title!/ can be anywhere" more content #atag
@@ -127,11 +127,11 @@ important tags" with a special color, or define a color by tag?
 - [ ] check for identical titles (not sure yet if this is a good idea)
 - [ ] better control on unexpected situations via clever exception catching
 - [ ] searching in the content of the notes
-- [ ] short lived notes (a `#1d` tag would automatically remove the note after one day) -> requires some kind of garbage
+- [ ] short-lived notes (a `#1d` tag would automatically remove the note after one day) -> requires some kind of garbage
 collector (maybe as a collateral of some functions?)
 - [ ] maybe turn the functions into @staticmethod to visually better organize the code
 - [ ] actually delete old deleted notes (which are for now renamed to .bak)
-- [ ] process command line via doctopts or similar
+- [ ] process command line via `doctopts` or similar
 
 ### longer term
 
@@ -154,7 +154,7 @@ If you **never** started `note`, first set the environment variable `NOTE_LOCATI
 If you already started `note` then set up the variable above, go to `%HOMEPATH%/Note` and copy the contents to the new
 location. You should see a bunch of weird files (they contain your notes) and a file `db.json`.
 
-### How to synchonize between computers?
+### How to synchronize between computers?
 
 The notes are just text files. You can use any synchronization program (Dropbox, OneDrive, Box, Nextcloud, Syncthing,
 ...)
@@ -198,7 +198,7 @@ Metadata is stored in `db.json` which lives in the same directory as the notes. 
 }
 ```
 
-`files` hold the most importnat information and is updated on note creation or edition.
+`files` hold the most important information and is updated on note creation or edition.
 
 `tags` are created but not use so far (I may just drop them in a future release because everything can be retrieved
 form `files` and any improvement is likely to be done in a SQLite database)
