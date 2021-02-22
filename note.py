@@ -370,7 +370,7 @@ if __name__ == "__main__":
         if sys.platform == 'win32':
             home = os.environ['HOMEPATH']
             editor_binary = os.environ.get('NOTE_EDITOR', 'notepad.exe')
-        elif sys.platform == 'linux':
+        elif sys.platform == 'linux' or sys.platform == 'darwin':
             home = os.environ['HOME']
             editor_binary = os.environ.get('NOTE_EDITOR', 'vi')
         else:
