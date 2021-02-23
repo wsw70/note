@@ -68,23 +68,18 @@ Notes have the following attributes:
     - directly on the command line when creating a new note, or editing one (if you do not provide anything you will be
       asked for a title)
 
-### Quick notes (`q`)
-
-This allows to create a full note from the command line without going through an editor. Typically, the equivalent of
-that scrap of paper you note a phone number on.
-
-     note q some content /oh a title!/ can be anywhere" more content #atag
-
-If the title is not provided (between two `"`), you will be asked for one, or you can accept the default time-based one.
-
-### Creating new notes with an editor (`n`)
+### Creating notes (`n`)
 
 You may want to create a note and start to edit it right away in an external editor
 
-    note n a tile if you want
+    note n /a title if you want/
 
-You can provide the title directly on the command line (anything you type after the selector `n` will be used as the
-title), or you will be asked for one.
+You can provide the title directly on the command line (between separators `/`), or you will be asked for one.
+
+The other option ("quick notes") is to type the content of the note directly in the command line. You can add a title if
+you want (if you do not, you will be asked for one)
+
+     note q some content /oh a title!/ can be anywhere" more content #atag
 
 ### Edit notes (`e`)
 
@@ -119,16 +114,18 @@ at https://github.com/wsw70/note/issues/new/choose
 
 ### short term
 
+- [ ] Autohotkey script
+- [ ] "dump mode" to retrieve all the notes in either one large file, or a zip
 - [ ] consider adding a configuration file instead of environment variables
 - [ ] add colors to teh table of notes, to differentiate quick ones, volatile notes (see below), etc. Maybe allow for "
-important tags" with a special color, or define a color by tag?
+  important tags" with a special color, or define a color by tag?
 - [ ] configure the sorting of lists (by title, serial or last modified)
 - [ ] add other typical ways to abort (Escape, Ctrl-C, ...)
 - [ ] check for identical titles (not sure yet if this is a good idea)
 - [ ] better control on unexpected situations via clever exception catching
 - [ ] searching in the content of the notes
 - [ ] short-lived notes (a `#1d` tag would automatically remove the note after one day) -> requires some kind of garbage
-collector (maybe as a collateral of some functions?)
+  collector (maybe as a collateral of some functions?)
 - [ ] maybe turn the functions into @staticmethod to visually better organize the code
 - [ ] actually delete old deleted notes (which are for now renamed to .bak)
 - [ ] process command line via `doctopts` or similar

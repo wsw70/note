@@ -91,12 +91,12 @@ class DB:
             log.debug("database updated")
 
 
-def editor(filename: str, title: str, edit: bool = True) -> None:
+def editor(filename: str, title: str, use_editor: bool = True) -> None:
     """
     Start the editor and update the database with metadata afterwards
     :param filename: name of the file to edit
     :param title: title of the note
-    :param edit: True if the editor must be actually started (default). False skips the editing part
+    :param use_editor: True if the editor must be actually started (default). False skips the editing part
     :return: nothing
     """
 
@@ -137,7 +137,7 @@ def editor(filename: str, title: str, edit: bool = True) -> None:
                 except KeyError:
                     db.db['tags'][tag] = [filename]
 
-    if edit:
+    if use_editor:
         # get checksum of filename to compare after edition and check if there was a change
         crc = zlib.adler32(open(filename, 'br').read())
         subprocess.run([editor_binary, filename])
@@ -316,24 +316,13 @@ def edit_note(title: list) -> None:
         editor(filename, title)
 
 
-def quick_or_new_note(quick: bool, content: list) -> None:
+def new_note(content: list) -> None:
     """
     Creation of a note either quick (all from command line), or via an editor
     :param quick: bool: is this a quick note?
     :param content: the content of the command line, can be the note, or a title
     :return: nothing
     """
-
-    def check_if_title_present(text: list) -> str:
-        """
-        Look for a title in the command line elements. It should be between slashes (/)
-        :param text: list of words
-        :return: the title, or '' if not found
-        """
-        if match := re.findall(r"\/(.+)\/", ' '.join(text)):
-            return match[0]
-        else:
-            return ''
 
     def ask_for_title() -> str:
         """
@@ -344,27 +333,47 @@ def quick_or_new_note(quick: bool, content: list) -> None:
         title = input(f"Provide title or press enter for timestamp ({default_title}): ")
         return title if title else default_title
 
-    # get the title
-    if quick:
-        if title := check_if_title_present(content):
-            content.remove(title)
+    def new(title: str, content_str: str = '', use_editor: bool = True):
+        # get the file for the note
+        filename = uuid.uuid4().hex
+        # insert the content to a file (it can be empty)
+        with open(filename, 'w') as f:
+            f.write(content_str)
+        # we always go though the editor function because it updates the metadata in the DB. edit=False means that the editor itself is skipped
+        editor(filename, title, use_editor=use_editor)
+        log.info(f"written new note '{title}'")
+
+    # analyze the command line string to catch a possible title
+    content_str = ' '.join(content)
+    # is there anything in the content?
+    if content_str:
+        # there is something on the command line
+        # is there a title inside?
+        if match := re.findall(r"^[^\/]*(\/.*?\/)?.*$", content_str)[0]:
+            # we have a title, remove the separators
+            title = match[1:-1]
+            # remove the title from the command line string
+            content_str = ' '.join(content_str.replace(match, '').split())
+            # check what is left = is it a new note with a title only, or a quick note? (with content)
+            if content_str:
+                # quick note
+                new(title, content_str=content_str, use_editor=False)
+            else:
+                new(title)
         else:
+            # there is content on the command line, but no title = quick note without title
             title = ask_for_title()
+            new(title, use_editor=False)
     else:
-        title = ' '.join(content) if content else ask_for_title()
-    # get the file for the note
-    filename = uuid.uuid4().hex
-    with open(filename, 'w') as f:
-        # we insert either the content of the command line for a quick note, or nothing for a new note
-        f.write(' '.join(content if quick else []))
-    # we always go though th editor function because it updates the metadata in the DB. edit=False means that the editor itself is skipped
-    editor(filename, title, edit=False if quick else True)
-    log.info(f"written {'quick' if quick else 'new'} note '{title}'")
+        # empty command line, get title and fire editor
+        title = ask_for_title()
+        new(title, use_editor=True)
 
 
 if __name__ == "__main__":
     class UnknownOS(Exception):
         pass
+
 
     # setup logging
     log = Logging.get_logger("note")
@@ -400,8 +409,7 @@ if __name__ == "__main__":
 
     # list of all possible options
     options = {
-        'q': quick_or_new_note,
-        'n': quick_or_new_note,
+        'n': new_note,
         'e': edit_note,
         'd': delete_note,
         's': search_note,
@@ -411,10 +419,4 @@ if __name__ == "__main__":
     if len(sys.argv) == 1 or sys.argv[1] not in options.keys():
         help_message()
     else:
-        # spacial case for new notes: quick (q) or via the editor (n)
-        if sys.argv[1] == 'q':
-            options[sys.argv[1]](True, sys.argv[2:])
-        elif sys.argv[1] == 'n':
-            options[sys.argv[1]](False, sys.argv[2:])
-        else:
-            options[sys.argv[1]](sys.argv[2:])
+        options[sys.argv[1]](sys.argv[2:])
