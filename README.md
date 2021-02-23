@@ -172,7 +172,6 @@ Metadata is stored in `db.json` which lives in the same directory as the notes. 
 
 ```json
 {
-  "files": {
     "c5cc4de1f4044ea18b7e138f16837667": {
       "filename": "c5cc4de1f4044ea18b7e138f16837667",
       "tags": [
@@ -183,22 +182,8 @@ Metadata is stored in `db.json` which lives in the same directory as the notes. 
       "title": "my #tag3 title",
       "serial": 1
     }
-  },
-  "tags": {
-    "tag1": [
-      "c5cc4de1f4044ea18b7e138f16837667"
-    ],
-    "tag2": [
-      "c5cc4de1f4044ea18b7e138f16837667"
-    ]
-  }
 }
 ```
-
-`files` hold the most important information and is updated on note creation or edition.
-
-`tags` are created but not use so far (I may just drop them in a future release because everything can be retrieved
-form `files` and any improvement is likely to be done in a SQLite database)
 
 # Donations
 

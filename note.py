@@ -76,10 +76,7 @@ class DB:
                 self.db = json.load(f)
         except (FileNotFoundError, json.decoder.JSONDecodeError):
             log.warning("missing or invalid DB file, creating new")
-            self.db = {
-                'files': dict(),
-                'tags': dict(),
-            }
+            self.db = {}
 
     def __enter__(self):
         return self
@@ -110,10 +107,10 @@ def editor(filename: str, title: str, use_editor: bool = True) -> None:
         with DB(write=True) as db:
             # check if we already have a serial
             try:
-                serial = db.db['files'][filename]['serial']
+                serial = db.db[filename]['serial']
             except KeyError:
                 # no serial: get largest serial, or start from 1 if there are no notes
-                if allserials := [k['serial'] for k in db.db['files'].values()]:
+                if allserials := [k['serial'] for k in db.db.values()]:
                     serial = max(allserials) + 1
                 else:
                     serial = 1
@@ -123,19 +120,13 @@ def editor(filename: str, title: str, use_editor: bool = True) -> None:
                 if token.startswith('#'):
                     tags.add(token[1:].lower())
             # update of the database with the information above
-            db.db['files'][filename] = {
+            db.db[filename] = {
                 'filename': filename,
                 'tags': list(tags),
                 'modified': arrow.now().isoformat(),
                 'title': title,
                 'serial': serial,
             }
-            # TODO: this is probably useless, candidate for removal
-            for tag in tags:
-                try:
-                    db.db['tags'][tag].append(filename)
-                except KeyError:
-                    db.db['tags'][tag] = [filename]
 
     if use_editor:
         # get checksum of filename to compare after edition and check if there was a change
@@ -163,7 +154,7 @@ def ask_for_note() -> (str, str):
         :return: a tuple (filename, title), or '' if no match
         """
         with DB() as db:
-            for filename, value in db.db['files'].items():
+            for filename, value in db.db.items():
                 if value['serial'] == serial:
                     return filename, value['title']
             # nothing matched
@@ -176,7 +167,7 @@ def ask_for_note() -> (str, str):
         :return: the filename of the note, or '' if no match
         """
         with DB() as db:
-            for filename, value in db.db['files'].items():
+            for filename, value in db.db.items():
                 if value['title'] == title:
                     return filename
             # nothing matched
@@ -206,7 +197,7 @@ def list_notes() -> None:
     """
     headers = ['serial', 'title', 'tags', 'modified']
     with DB() as db:
-        data = [[f"${k['serial']}", k['title'], ' '.join(k['tags']), arrow.get(k['modified']).humanize()] for k in db.db['files'].values()]
+        data = [[f"${k['serial']}", k['title'], ' '.join(k['tags']), arrow.get(k['modified']).humanize()] for k in db.db.values()]
     print(tabulate.tabulate(tabular_data=data, headers=headers))
 
 
@@ -245,9 +236,9 @@ def delete_note(_) -> None:
         with DB(write=True) as db:
             # remove from files
             try:
-                db.db['files'].pop(filename)
+                db.db.pop(filename)
             except KeyError:
-                log.warning(f"{filename} not present if 'files' of db.db")
+                log.warning(f"{filename} not present in db")
             # remove from tags
             for tag in db.db['tags']:
                 try:
@@ -275,10 +266,10 @@ def search_note(keywords: list) -> None:
     found = set()
     with DB() as db:
         for keyword in keywords:
-            for filename, note in db.db['files'].items():
+            for filename, note in db.db.items():
                 if keyword in note['title'] or keyword in ' '.join(note['tags']):
                     found.add(filename)
-        data = [[v['serial'], v['title'], ' '.join(v['tags']), arrow.get(k['modified']).humanize()] for k, v in db.db['files'].items() if k in found]
+        data = [[v['serial'], v['title'], ' '.join(v['tags']), arrow.get(k['modified']).humanize()] for k, v in db.db.items() if k in found]
     headers = ['serial', 'title', 'tags', 'modified']
     print(tabulate.tabulate(tabular_data=data, headers=headers))
     filename, title = ask_for_note()
@@ -300,7 +291,7 @@ def edit_note(title: list) -> None:
         :return: the filename of the note, or '' if no match
         """
         with DB() as db:
-            for filename, value in db.db['files'].items():
+            for filename, value in db.db.items():
                 if value['title'] == title:
                     return filename
             # nothing matched
