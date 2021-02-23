@@ -67,10 +67,12 @@ class DB:
         Load the database because we always need it
         :param write: True if the database needs to be written afterwards (modified in the context)
         """
+        # database file
+        self.db_file = 'db.json'
         self.write = write
         # we always load the DB
         try:
-            with open(db_file) as f:
+            with open(self.db_file) as f:
                 self.db = json.load(f)
         except (FileNotFoundError, json.decoder.JSONDecodeError):
             log.warning("missing or invalid DB file, creating new")
@@ -84,7 +86,7 @@ class DB:
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         if self.write:
-            with open(db_file, 'w') as f:
+            with open(self.db_file, 'w') as f:
                 json.dump(self.db, f)
             log.debug("database updated")
 
@@ -394,7 +396,6 @@ if __name__ == "__main__":
         log.warning(f"notes location does not exist, creating {location}. See FAQ at https://github.com/wsw70/note/blob/main/README.md")
         os.makedirs(location)
         os.chdir(location)
-    db_file = 'db.json'
     log.debug(f"working directory: {location}")
 
     # list of all possible options
