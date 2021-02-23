@@ -67,34 +67,33 @@ class DB:
         Load the database because we always need it
         :param write: True if the database needs to be written afterwards (modified in the context)
         """
+        # database file
+        self.db_file = 'db.json'
         self.write = write
         # we always load the DB
         try:
-            with open(db_file) as f:
+            with open(self.db_file) as f:
                 self.db = json.load(f)
         except (FileNotFoundError, json.decoder.JSONDecodeError):
             log.warning("missing or invalid DB file, creating new")
-            self.db = {
-                'files': dict(),
-                'tags': dict(),
-            }
+            self.db = {}
 
     def __enter__(self):
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         if self.write:
-            with open(db_file, 'w') as f:
+            with open(self.db_file, 'w') as f:
                 json.dump(self.db, f)
             log.debug("database updated")
 
 
-def editor(filename: str, title: str, edit: bool = True) -> None:
+def editor(filename: str, title: str, use_editor: bool = True) -> None:
     """
     Start the editor and update the database with metadata afterwards
     :param filename: name of the file to edit
     :param title: title of the note
-    :param edit: True if the editor must be actually started (default). False skips the editing part
+    :param use_editor: True if the editor must be actually started (default). False skips the editing part
     :return: nothing
     """
 
@@ -108,10 +107,10 @@ def editor(filename: str, title: str, edit: bool = True) -> None:
         with DB(write=True) as db:
             # check if we already have a serial
             try:
-                serial = db.db['files'][filename]['serial']
+                serial = db.db[filename]['serial']
             except KeyError:
                 # no serial: get largest serial, or start from 1 if there are no notes
-                if allserials := [k['serial'] for k in db.db['files'].values()]:
+                if allserials := [k['serial'] for k in db.db.values()]:
                     serial = max(allserials) + 1
                 else:
                     serial = 1
@@ -121,21 +120,15 @@ def editor(filename: str, title: str, edit: bool = True) -> None:
                 if token.startswith('#'):
                     tags.add(token[1:].lower())
             # update of the database with the information above
-            db.db['files'][filename] = {
+            db.db[filename] = {
                 'filename': filename,
                 'tags': list(tags),
                 'modified': arrow.now().isoformat(),
                 'title': title,
                 'serial': serial,
             }
-            # TODO: this is probably useless, candidate for removal
-            for tag in tags:
-                try:
-                    db.db['tags'][tag].append(filename)
-                except KeyError:
-                    db.db['tags'][tag] = [filename]
 
-    if edit:
+    if use_editor:
         # get checksum of filename to compare after edition and check if there was a change
         crc = zlib.adler32(open(filename, 'br').read())
         subprocess.run([editor_binary, filename])
@@ -150,7 +143,7 @@ def editor(filename: str, title: str, edit: bool = True) -> None:
 
 def ask_for_note() -> (str, str):
     """
-    Ask the user for the note thay want to manage (edit, delete, ...)
+    Ask the user for the note they want to manage (edit, delete, ...)
     :return: a tuple (filename, title)
     """
 
@@ -161,7 +154,7 @@ def ask_for_note() -> (str, str):
         :return: a tuple (filename, title), or '' if no match
         """
         with DB() as db:
-            for filename, value in db.db['files'].items():
+            for filename, value in db.db.items():
                 if value['serial'] == serial:
                     return filename, value['title']
             # nothing matched
@@ -174,7 +167,7 @@ def ask_for_note() -> (str, str):
         :return: the filename of the note, or '' if no match
         """
         with DB() as db:
-            for filename, value in db.db['files'].items():
+            for filename, value in db.db.items():
                 if value['title'] == title:
                     return filename
             # nothing matched
@@ -204,7 +197,7 @@ def list_notes() -> None:
     """
     headers = ['serial', 'title', 'tags', 'modified']
     with DB() as db:
-        data = [[f"${k['serial']}", k['title'], ' '.join(k['tags']), arrow.get(k['modified']).humanize()] for k in db.db['files'].values()]
+        data = [[f"${k['serial']}", k['title'], ' '.join(k['tags']), arrow.get(k['modified']).humanize()] for k in db.db.values()]
     print(tabulate.tabulate(tabular_data=data, headers=headers))
 
 
@@ -236,16 +229,16 @@ def delete_note(_) -> None:
 
     def remove_filename_from_db(filename: str) -> None:
         """
-        Deleting a note mans removing its filename from the database
+        Deleting a note means removing its filename from the database
         :param filename: teh filename to remove
         :return: nothing
         """
         with DB(write=True) as db:
             # remove from files
             try:
-                db.db['files'].pop(filename)
+                db.db.pop(filename)
             except KeyError:
-                log.warning(f"{filename} not present if 'files' of db.db")
+                log.warning(f"{filename} not present in db")
             # remove from tags
             for tag in db.db['tags']:
                 try:
@@ -273,10 +266,10 @@ def search_note(keywords: list) -> None:
     found = set()
     with DB() as db:
         for keyword in keywords:
-            for filename, note in db.db['files'].items():
+            for filename, note in db.db.items():
                 if keyword in note['title'] or keyword in ' '.join(note['tags']):
                     found.add(filename)
-        data = [[v['serial'], v['title'], ' '.join(v['tags']), arrow.get(k['modified']).humanize()] for k, v in db.db['files'].items() if k in found]
+        data = [[v['serial'], v['title'], ' '.join(v['tags']), arrow.get(k['modified']).humanize()] for k, v in db.db.items() if k in found]
     headers = ['serial', 'title', 'tags', 'modified']
     print(tabulate.tabulate(tabular_data=data, headers=headers))
     filename, title = ask_for_note()
@@ -298,7 +291,7 @@ def edit_note(title: list) -> None:
         :return: the filename of the note, or '' if no match
         """
         with DB() as db:
-            for filename, value in db.db['files'].items():
+            for filename, value in db.db.items():
                 if value['title'] == title:
                     return filename
             # nothing matched
@@ -314,24 +307,12 @@ def edit_note(title: list) -> None:
         editor(filename, title)
 
 
-def quick_or_new_note(quick: bool, content: list) -> None:
+def new_note(content: list) -> None:
     """
     Creation of a note either quick (all from command line), or via an editor
-    :param quick: bool: is this a quick note?
     :param content: the content of the command line, can be the note, or a title
     :return: nothing
     """
-
-    def check_if_title_present(text: list) -> str:
-        """
-        Look for a title in the command line elements. It should be between slashes (/)
-        :param text: list of words
-        :return: the title, or '' if not found
-        """
-        if match := re.findall(r"\/(.+)\/", ' '.join(text)):
-            return match[0]
-        else:
-            return ''
 
     def ask_for_title() -> str:
         """
@@ -342,27 +323,47 @@ def quick_or_new_note(quick: bool, content: list) -> None:
         title = input(f"Provide title or press enter for timestamp ({default_title}): ")
         return title if title else default_title
 
-    # get the title
-    if quick:
-        if title := check_if_title_present(content):
-            content.remove(title)
+    def new(title: str, content_str: str = '', use_editor: bool = True):
+        # get the file for the note
+        filename = uuid.uuid4().hex
+        # insert the content to a file (it can be empty)
+        with open(filename, 'w') as f:
+            f.write(content_str)
+        # we always go though the editor function because it updates the metadata in the DB. edit=False means that the editor itself is skipped
+        editor(filename, title, use_editor=use_editor)
+        log.info(f"written new note '{title}'")
+
+    # analyze the command line string to catch a possible title
+    content_str = ' '.join(content)
+    # is there anything in the content?
+    if content_str:
+        # there is something on the command line
+        # is there a title inside?
+        if match := re.findall(r"^[^\/]*(\/.*?\/)?.*$", content_str)[0]:
+            # we have a title, remove the separators
+            title = match[1:-1]
+            # remove the title from the command line string
+            content_str = ' '.join(content_str.replace(match, '').split())
+            # check what is left = is it a new note with a title only, or a quick note? (with content)
+            if content_str:
+                # quick note
+                new(title, content_str=content_str, use_editor=False)
+            else:
+                new(title)
         else:
+            # there is content on the command line, but no title = quick note without title
             title = ask_for_title()
+            new(title, use_editor=False)
     else:
-        title = ' '.join(content) if content else ask_for_title()
-    # get the file for the note
-    filename = uuid.uuid4().hex
-    with open(filename, 'w') as f:
-        # we insert either the content of the command line for a quick note, or nothing for a new note
-        f.write(' '.join(content if quick else []))
-    # we always go though th editor function because it updates the metadata in the DB. edit=False means that the editor itself is skipped
-    editor(filename, title, edit=False if quick else True)
-    log.info(f"written {'quick' if quick else 'new'} note '{title}'")
+        # empty command line, get title and fire editor
+        title = ask_for_title()
+        new(title, use_editor=True)
 
 
 if __name__ == "__main__":
     class UnknownOS(Exception):
         pass
+
 
     # setup logging
     log = Logging.get_logger("note")
@@ -386,7 +387,7 @@ if __name__ == "__main__":
             log.critical(f"missing home directory variable and NOTE_LOCATION is not set. I do not know where to put notes. See FAQ at https://github.com/wsw70/note/blob/main/README.md")
             sys.exit()
     location = pathlib.PurePath(os.environ.get('NOTE_LOCATION', f'{home}/Note'))
-    # move to notes directory, it becomes the workng dir. Create if needed
+    # move to notes directory, it becomes the working dir. Create if needed
     try:
         os.chdir(location)
     except FileNotFoundError:
@@ -394,13 +395,11 @@ if __name__ == "__main__":
         log.warning(f"notes location does not exist, creating {location}. See FAQ at https://github.com/wsw70/note/blob/main/README.md")
         os.makedirs(location)
         os.chdir(location)
-    db_file = 'db.json'
     log.debug(f"working directory: {location}")
 
     # list of all possible options
     options = {
-        'q': quick_or_new_note,
-        'n': quick_or_new_note,
+        'n': new_note,
         'e': edit_note,
         'd': delete_note,
         's': search_note,
@@ -410,10 +409,4 @@ if __name__ == "__main__":
     if len(sys.argv) == 1 or sys.argv[1] not in options.keys():
         help_message()
     else:
-        # spacial case for new notes: quick (q) or via the editor (n)
-        if sys.argv[1] == 'q':
-            options[sys.argv[1]](True, sys.argv[2:])
-        elif sys.argv[1] == 'n':
-            options[sys.argv[1]](False, sys.argv[2:])
-        else:
-            options[sys.argv[1]](sys.argv[2:])
+        options[sys.argv[1]](sys.argv[2:])
