@@ -143,7 +143,7 @@ def editor(filename: str, title: str, use_editor: bool = True) -> None:
 
 def ask_for_note() -> (str, str):
     """
-    Ask the user for the note thay want to manage (edit, delete, ...)
+    Ask the user for the note they want to manage (edit, delete, ...)
     :return: a tuple (filename, title)
     """
 
@@ -229,7 +229,7 @@ def delete_note(_) -> None:
 
     def remove_filename_from_db(filename: str) -> None:
         """
-        Deleting a note mans removing its filename from the database
+        Deleting a note means removing its filename from the database
         :param filename: teh filename to remove
         :return: nothing
         """
@@ -310,7 +310,6 @@ def edit_note(title: list) -> None:
 def new_note(content: list) -> None:
     """
     Creation of a note either quick (all from command line), or via an editor
-    :param quick: bool: is this a quick note?
     :param content: the content of the command line, can be the note, or a title
     :return: nothing
     """
@@ -388,7 +387,7 @@ if __name__ == "__main__":
             log.critical(f"missing home directory variable and NOTE_LOCATION is not set. I do not know where to put notes. See FAQ at https://github.com/wsw70/note/blob/main/README.md")
             sys.exit()
     location = pathlib.PurePath(os.environ.get('NOTE_LOCATION', f'{home}/Note'))
-    # move to notes directory, it becomes the workng dir. Create if needed
+    # move to notes directory, it becomes the working dir. Create if needed
     try:
         os.chdir(location)
     except FileNotFoundError:
