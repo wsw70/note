@@ -10,6 +10,7 @@ import pathlib
 import re
 import subprocess
 import sys
+import threading
 import uuid
 import zlib
 
@@ -88,6 +89,42 @@ class DB:
             log.debug("database updated")
 
 
+def garbage_collector() -> None:
+    """
+    Launched in a thread, it removes obsolete files, notes etc.
+    :return: nothing
+    """
+    log.debug(f"garbage collector starts")
+    start = arrow.now().timestamp
+    # check for old deleted files
+    # try:
+    #     os.remove(f"{filename}.bak")
+    # except FileNotFoundError:
+    #     log.warning(f"could not find {filename} to delete")
+    # check for volatile files
+    with DB() as db:
+        for filename, data in db.db.items():
+            for tag in data['tags']:
+                if found := re.findall(r"^(\d+)([mhd])$", tag):
+                    log.debug(f"note '{data['title']}' has a volatile tag: {tag}")
+                    if found[0][1] == "m":
+                        death = arrow.get(data['modified']).shift(minutes=int(found[0][0]))
+                    if found[0][1] == "h":
+                        death = arrow.get(data['modified']).shift(hours=int(found[0][0]))
+                    if found[0][1] == "d":
+                        death = arrow.get(data['modified']).shift(days=int(found[0][0]))
+                    # check if delete file
+                    if arrow.now() > death:
+                        log.info(f"lifespan of '{data['title']}' is over ({arrow.get(data['modified']).isoformat()}) due to #{tag}, deleting")
+                        delete_note('', only_delete_from_db=True, filename=filename)
+                    else:
+                        log.debug(f"{data['title']} is too young to die because of #{tag} (modified {arrow.get(data['modified']).isoformat()}). Death expected on {death.isoformat()}")
+    # check for orphaned files
+    pass
+    # check for orphaned entries in db
+    log.debug(f"garbage collector ended after {arrow.now().timestamp-start} seconds")
+
+
 def editor(filename: str, title: str, use_editor: bool = True) -> None:
     """
     Start the editor and update the database with metadata afterwards
@@ -128,6 +165,11 @@ def editor(filename: str, title: str, use_editor: bool = True) -> None:
                 'serial': serial,
             }
 
+
+
+
+    # start garbage collector
+    threading.Thread(target=garbage_collector).start()
     if use_editor:
         # get checksum of filename to compare after edition and check if there was a change
         crc = zlib.adler32(open(filename, 'br').read())
@@ -220,9 +262,11 @@ def help_message():
     """)
 
 
-def delete_note(_) -> None:
+def delete_note(_, only_delete_from_db=False, filename=None) -> None:
     """
     Delete a note. In fact notes are not deleted but renamed.
+    :param filename: filename to delete from db
+    :param only_delete_from_db: do not present a choice
     :param _: not used
     :return: nothing
     """
@@ -239,16 +283,10 @@ def delete_note(_) -> None:
                 db.db.pop(filename)
             except KeyError:
                 log.warning(f"{filename} not present in db")
-            # remove from tags
-            for tag in db.db['tags']:
-                try:
-                    db.db['tags'][tag].remove(filename)
-                except ValueError:
-                    # no filename for this tag
-                    pass
 
-    list_notes()
-    filename, _ = ask_for_note()
+    if not only_delete_from_db:
+        list_notes()
+        filename, _ = ask_for_note()
     if filename:
         remove_filename_from_db(filename)
         os.rename(filename, f"{filename}.bak")
@@ -367,7 +405,7 @@ if __name__ == "__main__":
 
     # setup logging
     log = Logging.get_logger("note")
-    log.debug(f"logging level: {os.environ.get('NOTE_LOGLEVEL', logging.INFO)} (default is {logging.INFO})")
+
     # check how it was started
     if sys.argv[-1] == "started_from_autohotkey":
         started_from_autohotkey = True

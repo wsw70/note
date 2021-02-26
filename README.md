@@ -124,7 +124,7 @@ at https://github.com/wsw70/note/issues/new/choose
 - [ ] check for identical titles (not sure yet if this is a good idea)
 - [ ] better control on unexpected situations via clever exception catching
 - [ ] searching in the content of the notes
-- [ ] short-lived notes (a `#1d` tag would automatically remove the note after one day) -> requires some kind of garbage
+- [x] short-lived notes (a `#1d` tag would automatically remove the note after one day) -> requires some kind of garbage
   collector (maybe as a collateral of some functions?)
 - [ ] maybe turn the functions into @staticmethod to visually better organize the code
 - [ ] actually delete old deleted notes (which are for now renamed to .bak)
