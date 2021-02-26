@@ -49,7 +49,7 @@ class Logging:
                 },
                 'note': {
                     'handlers': ['default'],
-                    'level': Logging.loglevel[os.environ.get('LOG_LEVEL', 'INFO')],
+                    'level': Logging.loglevel[os.environ.get('NOTE_LOGLEVEL', 'INFO')],
                     'propagate': False
                 },
             },
