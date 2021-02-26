@@ -120,6 +120,18 @@ to edit one right away.
 The keywords are matched with an `OR` (so in the example above notes with `dog` or `cat` in either the title or tags
 will be returned)
 
+### Using tags
+
+A tag is extra information you can add in your notes. They are of the form `#thisisatag` and you can add as many as
+you want, anywhere in the body of your note.
+
+When the notes are listed, their tag(s) are explicitly highlighted. You can also search notes based on their tag (or
+part of the tag).
+
+There are special tags that allow to create *volatile notes*. If you use a tag that is composted of a number followed
+by `m`, `h`or `d`, this note will be deleted after respectively the indicated number of minutes, hours or days. For
+instance, `#3d` will make it so that a note is deleted three days after its last modification.
+
 # TODO
 
 Below are some ideas for the short and longer term. New ideas welcome! Select "Feature request"
