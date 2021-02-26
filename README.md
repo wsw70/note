@@ -37,6 +37,19 @@ After several cryptic lines you will find your executable in a newly created dir
 I actually never used aliases in Windows, but apparently there is `doskey` for `cmd` and `Set-Alias` for PowerShell. I
 will someday update this README with relevant information but if someone could make a PR I would appreciate.
 
+### The AutoHotKey way
+
+[AutoHotKey](https://www.autohotkey.com/) is an awesome program to automate anything in Windows. If `note` is
+in `C:\bin\note.exe`, the following addition will pop-up a window to start your note (put anything what you would put
+after `note`)
+
+```
+#n::
+InputBox, NoteParameters, note, note, , , 100, , , , , n 
+Run, C:\bin\note.exe %NoteParameters% started_from_autohotkey
+Return
+```
+
 ## Linux
 
 In `bash` you can add `alias note='python3 /path/to/note.py'` to your `.bashrc`.
@@ -114,7 +127,7 @@ at https://github.com/wsw70/note/issues/new/choose
 
 ### short term
 
-- [ ] Autohotkey script
+- [x] Autohotkey script
 - [ ] "dump mode" to retrieve all the notes in either one large file, or a zip
 - [ ] consider adding a configuration file instead of environment variables
 - [ ] add colors to teh table of notes, to differentiate quick ones, volatile notes (see below), etc. Maybe allow for "
@@ -172,16 +185,16 @@ Metadata is stored in `db.json` which lives in the same directory as the notes. 
 
 ```json
 {
-    "c5cc4de1f4044ea18b7e138f16837667": {
-      "filename": "c5cc4de1f4044ea18b7e138f16837667",
-      "tags": [
-        "tag1",
-        "tag2"
-      ],
-      "modified": "2021-02-22T11:11:41.252259+01:00",
-      "title": "my #tag3 title",
-      "serial": 1
-    }
+  "c5cc4de1f4044ea18b7e138f16837667": {
+    "filename": "c5cc4de1f4044ea18b7e138f16837667",
+    "tags": [
+      "tag1",
+      "tag2"
+    ],
+    "modified": "2021-02-22T11:11:41.252259+01:00",
+    "title": "my #tag3 title",
+    "serial": 1
+  }
 }
 ```
 
