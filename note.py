@@ -368,6 +368,12 @@ if __name__ == "__main__":
     # setup logging
     log = Logging.get_logger("note")
     log.debug(f"logging level: {os.environ.get('NOTE_LOGLEVEL', logging.INFO)} (default is {logging.INFO})")
+    # check how it was started
+    if sys.argv[-1] == "started_from_autohotkey":
+        started_from_autohotkey = True
+        sys.argv.pop()
+    else:
+        started_from_autohotkey = False
 
     # get environment (notes dir, editor)
     try:
@@ -410,3 +416,8 @@ if __name__ == "__main__":
         help_message()
     else:
         options[sys.argv[1]](sys.argv[2:])
+    if started_from_autohotkey:
+        input("press Enter to exit")
+    else:
+        log.debug("exiting directly because in interactive shell")
+
