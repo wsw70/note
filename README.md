@@ -122,8 +122,8 @@ will be returned)
 
 ### Using tags
 
-A tag is extra information you can add in your notes. They are of the form `#thisisatag` and you can add as many as
-you want, anywhere in the body of your note.
+A tag is extra information you can add in your notes. They are of the form `#thisisatag` and you can add as many as you
+want, anywhere in the body of your note.
 
 When the notes are listed, their tag(s) are explicitly highlighted. You can also search notes based on their tag (or
 part of the tag).
@@ -209,6 +209,13 @@ Metadata is stored in `db.json` which lives in the same directory as the notes. 
   }
 }
 ```
+
+# How to get help
+
+If you found a bug, please open an Issue on GitHub. This is also the place you can request a new feature.
+
+If you have a question or problem, [GitHib Discussions](https://github.com/wsw70/note/discussions) is available (it is a
+community forum)
 
 # Donations
 
