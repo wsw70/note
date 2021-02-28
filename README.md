@@ -1,3 +1,5 @@
+![](https://img.shields.io/github/downloads/wsw70/note/total?style=plastic) ![](https://img.shields.io/github/last-commit/wsw70/note)
+
 # Why yet another note taking program?
 
 `note` was designed with a very specific target in mind: me, and my 2354 scraps of paper. It runs from the command line
